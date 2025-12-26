@@ -1,0 +1,94 @@
+/* resources/css/app.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .form-input {
+        @apply block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white;
+    }
+    
+    .file-input {
+        @apply block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400;
+    }
+    
+    .btn-primary {
+        @apply inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition;
+    }
+    
+    .btn-secondary {
+        @apply inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition;
+    }
+}
+
+@layer base {
+    /* Global Custom Scrollbar */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+    }
+
+    *::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background-color: rgba(100, 116, 139, 0.5);
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(100, 116, 139, 0.7);
+    }
+
+    /* Dark mode scrollbar */
+    .dark *::-webkit-scrollbar-thumb {
+        background-color: rgba(161, 161, 170, 0.3);
+    }
+
+    .dark *::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(161, 161, 170, 0.5);
+    }
+
+    .dark * {
+        scrollbar-color: rgba(161, 161, 170, 0.3) transparent;
+    }
+}
+
+@layer utilities {
+    /* Utility class untuk scrollbar minimal */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: rgba(100, 116, 139, 0.3);
+        border-radius: 3px;
+    }
+
+    /* Utility class untuk hide scrollbar */
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Utility class untuk scrollbar custom color */
+    .scrollbar-blue::-webkit-scrollbar-thumb {
+        background-color: rgba(59, 130, 246, 0.5);
+    }
+
+    .scrollbar-blue::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(59, 130, 246, 0.7);
+    }
+}
