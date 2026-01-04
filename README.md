@@ -50,7 +50,7 @@ Sistem ini dirancang untuk mendigitalisasi proses operasional harian secara teri
 
 <p align="center">
   <img src="docs/screenshots/Dashboard.png" width="400">
-  <img src="docs/screenshots/Analis.png" width="400">
+  <img src="docs/screenshots/Doashboard_bg.png" width="400">
 </p>
 
 <p align="center">
@@ -61,6 +61,11 @@ Sistem ini dirancang untuk mendigitalisasi proses operasional harian secara teri
 <p align="center">
   <img src="docs/screenshots/Histori.png" width="400">
   <img src="docs/screenshots/Laporan.png" width="400">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/Payment.png" width="400">
+  <img src="docs/screenshots/Analis.png" width="400">
 </p>
 
 ---
