@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Transaksi;
+use App\Models\Spot; 
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,6 @@ class AnalyticsController extends Controller
 
         $loggedInUserId = Auth::id();
 
-        // === RINGKASAN CEPAT ===
         $pendapatanHariIni = Transaksi::where('user_id', $loggedInUserId)
                                 ->whereDate('waktu_mulai', $today)
                                 ->sum('total_harga');
@@ -39,7 +39,6 @@ class AnalyticsController extends Controller
                                 ->whereYear('waktu_mulai', $year)
                                 ->avg('durasi') ?? 0;
 
-        // === GRAFIK: PENDAPATAN PER HARI (7 Hari Terakhir) ===
         $pendapatanPerHari = Transaksi::where('user_id', $loggedInUserId)
                                 ->select(
                                     DB::raw('DATE(waktu_mulai) as tanggal'),
@@ -50,15 +49,13 @@ class AnalyticsController extends Controller
                                 ->orderBy('tanggal', 'ASC')
                                 ->get();
 
-        // === GRAFIK: PENDAPATAN PER MEJA ===
-        $pendapatanPerMeja = DB::table('transaksi')
-                                ->join('meja', 'transaksi.meja_id', '=', 'meja.id')
+        $pendapatanPerSpot = DB::table('transaksi')
+                                ->join('spots', 'transaksi.spot_id', '=', 'spots.id') 
                                 ->where('transaksi.user_id', $loggedInUserId)
-                                ->select('meja.nama_meja', DB::raw('SUM(transaksi.total_harga) as total'))
-                                ->groupBy('meja.nama_meja')
+                                ->select('spots.nama_spot', DB::raw('SUM(transaksi.total_harga) as total')) 
+                                ->groupBy('spots.nama_spot')
                                 ->get();
 
-        // === GRAFIK: JAM SIBUK (Jumlah transaksi per jam) ===
         $jamSibuk = Transaksi::where('user_id', $loggedInUserId)
                             ->select(
                                 DB::raw('HOUR(waktu_mulai) as jam'),
@@ -74,7 +71,7 @@ class AnalyticsController extends Controller
             'jumlahTransaksi',
             'rataRataDurasi',
             'pendapatanPerHari',
-            'pendapatanPerMeja',
+            'pendapatanPerSpot',
             'jamSibuk'
         ));
     }

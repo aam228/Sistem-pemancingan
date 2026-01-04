@@ -25,8 +25,10 @@
 
             <div class="mb-3">
                 <label for="harga" class="form-label fw-semibold">Harga (Rp)</label>
-                <input type="text" name="harga" id="harga" class="form-control" 
-                       value="{{ old('harga', $produk->harga) }}" required>
+                {{-- Tambahkan (int) untuk membuang desimal .00 dari database --}}
+                <input type="text" name="harga" id="harga_mask" 
+                    class="form-control fw-bold" 
+                    value="{{ old('harga', isset($produk) ? (int)$produk->harga : '') }}" required>
                 @error('harga')
                     <div class="text-danger small mt-1">{{ $message }}</div>
                 @enderror

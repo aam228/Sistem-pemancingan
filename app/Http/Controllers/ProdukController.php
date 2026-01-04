@@ -22,23 +22,31 @@ class ProdukController extends Controller
         $validated = $request->validate([
             'nama_produk' => 'required|string|max:255|unique:produk,nama_produk,NULL,id,user_id,'.Auth::id(),
             'harga' => 'required|numeric',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
         ]);
 
         if ($request->hasFile('gambar')) {
             $file = $request->file('gambar');
-            $filename = uniqid().'.webp';
-            $path = 'produk-images/'.$filename;
+            
+            $filename = time() . '_' . uniqid() . '.webp';
+            $directory = 'produk-images';
+            $fullPath = $directory . '/' . $filename;
 
             $manager = new ImageManager(new Driver());
-            $image = $manager->read($file)->toWebp(90);
 
-            Storage::disk('public')->put($path, (string) $image);
+            $image = $manager->read($file);
 
-            $validated['gambar'] = $path;
+            $image->scale(width: 600);
+
+            $encoded = $image->toWebp(80);
+
+            Storage::disk('public')->put($fullPath, (string) $encoded);
+
+            $validated['gambar'] = $fullPath;
         }
 
         Auth::user()->produks()->create($validated);
+        
         return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
@@ -65,9 +73,9 @@ class ProdukController extends Controller
         }
 
         $validated = $request->validate([
-            'nama_produk' => 'required|string|max:255|unique:produk,nama_produk,' . $produk->id . ',id,user_id,'.Auth::id(),
-            'harga' => 'required|numeric',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'nama_produk' => 'required|string|max:255|unique:produk,nama_produk,' . $produk->id . ',id,user_id,' . Auth::id(),
+            'harga'       => 'required|numeric|min:0',
+            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
         ]);
 
         if ($request->hasFile('gambar')) {
@@ -76,19 +84,23 @@ class ProdukController extends Controller
             }
 
             $file = $request->file('gambar');
-            $filename = uniqid().'.webp';
-            $path = 'produk-images/'.$filename;
+            $filename = time() . '_' . uniqid() . '.webp';
+            $fullPath = 'produk-images/' . $filename;
 
             $manager = new ImageManager(new Driver());
-            $image = $manager->read($file)->toWebp(90);
+            $image = $manager->read($file);
+            
+            $image->scale(width: 600);
+            $encoded = $image->toWebp(80);
 
-            Storage::disk('public')->put($path, (string) $image);
-            $validated['gambar'] = $path;
+            Storage::disk('public')->put($fullPath, (string) $encoded);
+            
+            $validated['gambar'] = $fullPath;
         }
 
         $produk->update($validated);
 
-        return redirect()->back()->with('success', 'Produk berhasil diperbarui.');
+        return redirect()->route('produk.index')->with('success', 'Produk berhasil diperbarui.');
     }
 
     public function destroy(Produk $produk)
@@ -109,8 +121,14 @@ class ProdukController extends Controller
     public function editJson(Produk $produk)
     {
         if ($produk->user_id !== Auth::id()) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat data produk ini.');
+            abort(403);
         }
-        return response()->json($produk);
+
+        return response()->json([
+            'id' => $produk->id,
+            'nama_produk' => $produk->nama_produk,
+            'harga' => (int) $produk->harga, 
+            'gambar' => $produk->gambar
+        ]);
     }
 }

@@ -20,7 +20,8 @@
     <div class="card bg-body border shadow-sm">
         <div class="card-header bg-transparent py-3 px-3 border-bottom">
             <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 text-body fw-bold">Pesan Menu - {{ $transaksi->meja->nama_meja }}</h5>
+                {{-- REVISI: Menggunakan $transaksi->spot->nama_spot --}}
+                <h5 class="mb-0 text-body fw-bold">Pesan Menu - {{ $transaksi->spot->nama_spot }}</h5>
                 <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-2">
                     <i class="fas fa-user me-1"></i> {{ Str::limit($transaksi->nama_pelanggan, 15) }}
                 </span>
@@ -33,12 +34,10 @@
                 <input type="hidden" name="transaksi_id" value="{{ $transaksi->id }}">
 
                 @if($produk->count() > 0)
-                {{-- Grid disamakan dengan Kelola Makanan --}}
                 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-3 mb-4">
                     @foreach ($produk as $item)
                     <div class="col">
                         <div class="card bg-body border h-100 shadow-sm hover-product-card">
-                            {{-- Gambar Produk disamakan height 140px --}}
                             <div class="position-relative overflow-hidden" style="height: 140px;">
                                 @if($item->gambar)
                                     <img src="{{ asset('storage/' . $item->gambar) }}" 
@@ -50,7 +49,6 @@
                                     </div>
                                 @endif
                                 
-                                {{-- Badge Jumlah --}}
                                 <div class="position-absolute top-0 end-0 p-2" id="badge-{{ $item->id }}" style="display: none;">
                                     <span class="badge bg-success shadow-sm px-2 py-1">
                                         <span id="badge-count-{{ $item->id }}">0</span>
@@ -68,7 +66,6 @@
                                     </p>
                                 </div>
 
-                                {{-- Kontrol Jumlah --}}
                                 <div class="d-flex align-items-center justify-content-between bg-body-tertiary rounded-pill p-1 border">
                                     <button type="button" 
                                             class="btn btn-sm btn-light rounded-circle shadow-sm change-btn d-flex align-items-center justify-content-center"
@@ -124,16 +121,16 @@
 
                 {{-- Aksi --}}
                 <div class="d-flex flex-wrap gap-2 justify-content-end">
-                    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm px-3 rounded-pill">
+                    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm px-3 rounded-2">
                         <i class="fas fa-arrow-left me-1"></i> Kembali
                     </a>
                     <button type="button" 
-                            class="btn btn-outline-primary btn-sm px-3 rounded-pill"
+                            class="btn btn-outline-primary btn-sm px-3 rounded-2"
                             data-bs-toggle="modal" 
                             data-bs-target="#daftarPesananModal">
                         <i class="fas fa-receipt me-1"></i> Pesanan Saat Ini
                     </button>
-                    <button type="submit" class="btn btn-success btn-sm px-4 rounded-pill shadow-sm">
+                    <button type="submit" class="btn btn-success btn-sm px-4 shadow-sm rounded-2">
                         <i class="fas fa-check-circle me-1"></i> Konfirmasi Pesanan
                     </button>
                 </div>
@@ -142,12 +139,14 @@
     </div>
 </div>
 
+{{-- MODAL DAFTAR PESANAN --}}
 <div class="modal fade" id="daftarPesananModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-body border shadow">
             <div class="modal-header border-bottom">
                 <h6 class="modal-title text-body fw-bold">
-                    <i class="fas fa-receipt me-2 text-primary"></i> Daftar Pesanan Meja
+                    {{-- REVISI: Teks Spot --}}
+                    <i class="fas fa-receipt me-2 text-primary"></i> Daftar Pesanan Spot
                 </h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -187,7 +186,8 @@
                 @else
                     <div class="text-center py-5">
                         <i class="fas fa-shopping-basket fa-3x text-muted opacity-25 mb-3"></i>
-                        <p class="text-muted small">Belum ada pesanan makanan untuk meja ini.</p>
+                        {{-- REVISI: Teks Spot --}}
+                        <p class="text-muted small">Belum ada pesanan makanan untuk spot ini.</p>
                     </div>
                 @endif
             </div>
@@ -202,7 +202,6 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Fungsi untuk menghitung ulang total harga dan total item
     const updateTotal = () => {
         let total = 0;
         let totalItems = 0;
@@ -215,7 +214,6 @@ document.addEventListener('DOMContentLoaded', function() {
             total += jumlah * harga;
             totalItems += jumlah;
             
-            // Update Badge di pojok gambar
             const badge = document.getElementById(`badge-${id}`);
             if (badge) {
                 if (jumlah > 0) {
@@ -227,7 +225,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Update tampilan summary di bawah
         const totalHargaEl = document.getElementById('totalHarga');
         const totalItemEl = document.getElementById('totalItem');
         
@@ -235,46 +232,30 @@ document.addEventListener('DOMContentLoaded', function() {
         if (totalItemEl) totalItemEl.textContent = totalItems;
     };
 
-    // Handler tombol Plus (+) dan Minus (-)
     document.querySelectorAll('.change-btn').forEach(button => {
         button.addEventListener('click', function(e) {
-            e.preventDefault(); // Mencegah form tersubmit secara tidak sengaja
-            
+            e.preventDefault();
             const id = this.dataset.id;
             const change = parseInt(this.dataset.change);
             const input = document.getElementById(`jumlah-${id}`);
-            
             if (input) {
-                let current = parseInt(input.value) || 0;
-                let newValue = current + change;
-                
-                // Set nilai baru, minimal 0
+                let newValue = (parseInt(input.value) || 0) + change;
                 input.value = newValue < 0 ? 0 : newValue;
-                
-                // Triger hitung ulang
                 updateTotal();
             }
         });
     });
 
-    // Handler jika user mengetik angka manual di input
     document.querySelectorAll('.jumlah-input').forEach(input => {
         input.addEventListener('input', function() {
-            if (this.value < 0 || this.value === '') {
-                this.value = 0;
-            }
+            if (this.value < 0 || this.value === '') this.value = 0;
             updateTotal();
         });
-        
-        // Mencegah input karakter non-angka
         input.addEventListener('keydown', function(e) {
-            if (['-', 'e', '+', 'E'].includes(e.key)) {
-                e.preventDefault();
-            }
+            if (['-', 'e', '+', 'E'].includes(e.key)) e.preventDefault();
         });
     });
 
-    // Validasi saat submit: minimal ada 1 menu yang dipesan
     const form = document.getElementById('pesananForm');
     if (form) {
         form.addEventListener('submit', function(e) {
@@ -286,7 +267,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Jalankan sekali saat load untuk reset tampilan
     updateTotal();
 });
 </script>
@@ -294,26 +274,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @push('styles')
 <style>
-    .hover-product-card {
-        transition: transform 0.2s ease, border-color 0.2s;
-    }
-    .hover-product-card:hover {
-        transform: translateY(-3px);
-        border-color: var(--bs-primary) !important;
-    }
-
-    /* Hilangkan arrow spinner di input number */
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-
-    /* Style khusus tombol minus plus agar kontras di dark mode */
-    [data-bs-theme="dark"] .change-btn {
-        background-color: var(--bs-tertiary-bg);
-        border-color: var(--bs-border-color);
-        color: white;
-    }
+    .hover-product-card { transition: transform 0.2s ease, border-color 0.2s; }
+    .hover-product-card:hover { transform: translateY(-3px); border-color: var(--bs-primary) !important; }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    [data-bs-theme="dark"] .change-btn { background-color: var(--bs-tertiary-bg); border-color: var(--bs-border-color); color: white; }
 </style>
 @endpush

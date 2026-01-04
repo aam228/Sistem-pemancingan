@@ -1,37 +1,39 @@
 <?php
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PesananMakanan extends Model
 {
-    use HasFactory;
-
     protected $table = 'pesanan_makanan';
-    // Tambahkan 'user_id' ke dalam $fillable
-    protected $fillable = ['user_id', 'transaksi_id', 'meja_id', 'produk_id', 'jumlah', 'subtotal'];
+
+    protected $fillable = [
+        'user_id',
+        'transaksi_id',
+        'spot_id',
+        'produk_id',
+        'jumlah',
+        'subtotal'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function transaksi()
     {
         return $this->belongsTo(Transaksi::class);
     }
 
-    public function meja()
+    public function spot()
     {
-        return $this->belongsTo(Meja::class);
+        return $this->belongsTo(Spot::class, 'spot_id');
     }
 
     public function produk()
     {
         return $this->belongsTo(Produk::class);
-    }
-
-    /**
-     * Dapatkan user pemilik pesanan makanan ini.
-     */
-    public function user() // <-- TAMBAHKAN FUNGSI INI
-    {
-        return $this->belongsTo(User::class);
     }
 }

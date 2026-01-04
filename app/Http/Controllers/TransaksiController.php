@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaksi;
-use App\Models\Meja;
+use App\Models\Spot;
+use App\Models\PaymentMethod;
+use App\Models\Member;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -12,71 +14,51 @@ use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller
 {
-
     private function getSesiConfig(string $tipe)
     {
         return [
-            'pagi' => [
-                'start' => '05:00',
-                'end'   => '10:00',
-            ],
-            'siang' => [
-                'start' => '10:00',
-                'end'   => '14:00',
-            ],
-            'sore' => [
-                'start' => '14:00',
-                'end'   => '18:00',
-            ],
-            'malam' => [
-                'start'    => '18:00',
-                'end'      => '06:00',
-                'next_day' => true,
-            ],
-            'pagi_sore' => [
-                'start' => '05:00',
-                'end'   => '18:00',
-            ],
-            'full' => [
-                'start'    => '05:00',
-                'end'      => '10:00',
-                'next_day' => true,
-            ],
+            'pagi' => ['start' => '05:00', 'end' => '10:00'],
+            'siang' => ['start' => '10:00', 'end' => '14:00'],
+            'sore' => ['start' => '14:00', 'end' => '18:00'],
+            'malam' => ['start' => '18:00', 'end' => '06:00', 'next_day' => true],
+            'pagi_sore' => ['start' => '05:00', 'end' => '18:00'],
+            'full' => ['start' => '05:00', 'end' => '10:00', 'next_day' => true],
         ][$tipe] ?? null;
     }
 
-    public function create($meja_id)
-    {
-        $meja = Meja::findOrFail($meja_id);
-
-        if ($meja->user_id !== Auth::id()) {
-            abort(403, 'Akses ditolak.');
-        }
-
-        return view('transaksi.create', compact('meja'));
-    }
-
-    private function getHargaSesi(Meja $meja, string $tipeSesi)
+    private function getHargaSesi(Spot $spot, string $tipeSesi)
     {
         return match ($tipeSesi) {
-            'pagi'  => $meja->tarif_pagi,
-            'siang' => $meja->tarif_siang,
-            'sore'  => $meja->tarif_sore,
-            'malam' => $meja->tarif_malam,
+            'pagi'  => $spot->tarif_pagi,
+            'siang' => $spot->tarif_siang,
+            'sore'  => $spot->tarif_sore,
+            'malam' => $spot->tarif_malam,
             default => 0,
         };
     }
 
+    public function create($spot_id)
+    {
+        $spot = Spot::findOrFail($spot_id);
+        $members = Member::where('status', 'active')->get();
+
+        if ($spot->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        return view('transaksi.create', compact('spot', "members"));
+    }
 
     public function store(Request $request)
     {
         $request->validate([
-            'meja_id'        => 'required|exists:meja,id',
-            'nama_pelanggan'=> 'required|string|max:255',
-            'tipe_sesi'     => 'required|string',
+            'spot_id'        => 'required|exists:spots,id',
+            'nama_pelanggan' => 'required|string|max:255',
+            'tipe_sesi'      => 'required|string',
+            'member_id'      => 'nullable|exists:members,id',
         ]);
 
-        $meja = Meja::findOrFail($request->meja_id);
+        $spot = Spot::findOrFail($request->spot_id);
         $config = $this->getSesiConfig($request->tipe_sesi);
 
         if (!$config) {
@@ -84,180 +66,138 @@ class TransaksiController extends Controller
         }
 
         $now = now();
-
         $waktuMulai = $now;
-        $waktuSelesai = Carbon::parse(
-            $now->format('Y-m-d') . ' ' . $config['end']
-        );
 
+        $waktuSelesaiEstimasi = Carbon::parse($now->format('Y-m-d') . ' ' . $config['end']);
         if (!empty($config['next_day']) && $now->format('H:i') >= $config['start']) {
-            $waktuSelesai->addDay();
+            $waktuSelesaiEstimasi->addDay();
         }
 
-        $hargaSesi = $this->getHargaSesi($meja, $request->tipe_sesi);
+        $hargaSesi = $this->getHargaSesi($spot, $request->tipe_sesi);
 
         $transaksi = Auth::user()->transaksis()->create([
-            'meja_id'        => $meja->id,
-            'nama_pelanggan' => $request->nama_pelanggan,
-            'tipe_sesi'      => $request->tipe_sesi,
-            'total_harga'    => $hargaSesi,
-            'waktu_mulai'    => $waktuMulai,
-            'waktu_selesai'  => $waktuSelesai,
-
-            'jumlah_ikan_kecil' => 0,
+            'spot_id'           => $spot->id,
+            'member_id'         => $request->member_id,
+            'nama_pelanggan'    => $request->nama_pelanggan,
+            'tipe_sesi'         => $request->tipe_sesi,
+            'total_harga'       => $hargaSesi,
+            'waktu_mulai'       => $waktuMulai,
+            'waktu_selesai'     => $waktuSelesaiEstimasi,
+            'jumlah_ikan_kecil' => null,
             'berat_ikan_babon'  => 0,
         ]);
 
-        $meja->update(['status' => 'digunakan']);
+        $spot->update(['status' => 'digunakan']);
 
-        return redirect()->route('dashboard')
-            ->with('success', 'Sesi pemancingan berhasil dimulai.');
+        return redirect()->route('dashboard')->with('success', 'Sesi pemancingan dimulai.');
     }
 
     public function selesaiForm($id)
     {
-        $transaksi = Transaksi::with('meja')->findOrFail($id);
+        $transaksi = Transaksi::with(['spot', 'member'])->findOrFail($id);
 
         if ($transaksi->user_id !== Auth::id()) {
-            abort(403, 'Akses ditolak.');
+            abort(403);
         }
 
-        return view('transaksi.selesai', compact('transaksi'));
+        $paymentMethods = PaymentMethod::where('is_active', 1)->get();
+        return view('transaksi.selesai', compact('transaksi', 'paymentMethods'));
     }
 
     public function selesaiProses(Request $request, $id)
     {
-        DB::transaction(function () use ($request, $id) {
-
-            $transaksi = Transaksi::with('meja')->findOrFail($id);
+        return DB::transaction(function () use ($request, $id) {
+            $transaksi = Transaksi::with(['spot', 'member'])->findOrFail($id);
 
             if ($transaksi->user_id !== Auth::id()) {
                 abort(403);
             }
 
             $request->validate([
-                'jumlah_ikan_kecil' => 'required|integer|min:0',
-                'berat_ikan_babon'  => 'required|numeric|min:0',
+                'jumlah_ikan_kecil' => ['required', 'integer', 'min:0'],
+                'berat_ikan_babon'  => ['required', 'numeric', 'min:0'],
+                'payment_method_id' => ['required', 'exists:payment_methods,id'],
             ]);
 
-            $hargaIkanKecil = $request->jumlah_ikan_kecil * 5000;
-            $hargaIkanBabon = $request->berat_ikan_babon * 25000;
+            $hargaDasarKecil = 5000;
+            $hargaDasarBabon = 25000;
 
-            $totalHarga = $transaksi->total_harga + $hargaIkanKecil + $hargaIkanBabon;
+            $persenDiskon = 0;
+            if ($transaksi->member && $transaksi->member->status === 'active') {
+                $persenDiskon = $transaksi->member->diskon_persen;
+            }
 
-            $waktuSelesaiFinal = now()->lessThan($transaksi->waktu_selesai)
-                ? now()
-                : $transaksi->waktu_selesai;
+            $tarifKecil = $hargaDasarKecil * ((100 - $persenDiskon) / 100);
+            $tarifBabon = $hargaDasarBabon * ((100 - $persenDiskon) / 100);
+
+            $subTotalIkanKecil = $request->jumlah_ikan_kecil * $tarifKecil;
+            $subTotalIkanBabon = $request->berat_ikan_babon * $tarifBabon;
+
+            $totalHargaFinal = $transaksi->total_harga + $subTotalIkanKecil + $subTotalIkanBabon;
+
+            $waktuSelesaiReal = now();
 
             $transaksi->update([
                 'jumlah_ikan_kecil' => $request->jumlah_ikan_kecil,
                 'berat_ikan_babon'  => $request->berat_ikan_babon,
-                'total_harga'       => $totalHarga,
-                'waktu_selesai'     => $waktuSelesaiFinal,
+                'total_harga'       => $totalHargaFinal,
+                'waktu_selesai'     => $waktuSelesaiReal,
+                'payment_method_id' => $request->payment_method_id,
             ]);
 
-            $transaksi->meja->update(['status' => 'tersedia']);
-        });
+            if ($transaksi->member) {
+                $poinBaru = floor($totalHargaFinal / 10000);
+                $transaksi->member->increment('poin', $poinBaru);
+            }
 
-        return redirect()->route('dashboard')
-            ->with('success', 'Sesi selesai.');
+            $transaksi->spot->update(['status' => 'tersedia']);
+
+            return redirect()->route('dashboard')
+                ->with('success', 'Transaksi selesai. Diskon ' . $persenDiskon . '% telah diterapkan!');
+        });
     }
 
     public function batal($id)
     {
-        $transaksi = Transaksi::with('meja')->findOrFail($id);
+        $transaksi = Transaksi::with('spot')->findOrFail($id);
+        if ($transaksi->user_id !== Auth::id()) abort(403);
 
-        if ($transaksi->user_id !== Auth::id()) {
-            abort(403, 'Akses ditolak.');
-        }
-
-        $transaksi->meja->update(['status' => 'tersedia']);
+        $transaksi->spot->update(['status' => 'tersedia']);
         $transaksi->delete();
 
-        return redirect()->route('dashboard')
-            ->with('success', 'Transaksi dibatalkan.');
+        return redirect()->route('dashboard')->with('success', 'Transaksi dibatalkan.');
     }
 
     public function histori()
     {
-        $transaksis = Auth::user()->transaksis()
-            ->with('meja')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
+        $transaksis = Auth::user()->transaksis()->with('spot')->orderBy('created_at', 'desc')->paginate(10);
         return view('transaksi.histori', compact('transaksis'));
-    }
-
-    public function hapus(Transaksi $transaksi)
-    {
-        if ($transaksi->user_id !== Auth::id()) {
-            abort(403, 'Akses ditolak.');
-        }
-
-        $transaksi->delete();
-
-        return redirect()->route('transaksi.histori')
-            ->with('success', 'Transaksi dihapus.');
     }
 
     public function laporan(Request $request)
     {
-        $query = Auth::user()->transaksis()->with('meja');
+        $spots = Auth::user()->spots; 
+
+        $query = Auth::user()->transaksis()->with('spot');
 
         if ($request->filled('tanggal_mulai') && $request->filled('tanggal_selesai')) {
-            $query->whereBetween('created_at', [
+            $query->whereBetween('waktu_mulai', [
                 Carbon::parse($request->tanggal_mulai)->startOfDay(),
                 Carbon::parse($request->tanggal_selesai)->endOfDay(),
             ]);
         }
 
-        $transaksis = $query->orderBy('created_at', 'desc')->get();
-        $totalPendapatan = $transaksis->sum('total_harga');
-        $mejas = Auth::user()->mejas()->get();
+        if ($request->filled('nama_pelanggan')) {
+            $query->where('nama_pelanggan', 'like', '%' . $request->nama_pelanggan . '%');
+        }
 
-        return view('transaksi.laporan', compact(
-            'transaksis',
-            'totalPendapatan',
-            'mejas'
-        ));
-    }
-
-    public function cetakLaporan(Request $request)
-    {
-        $query = Auth::user()->transaksis()->with('meja');
-
-        if ($request->filled('tanggal_mulai') && $request->filled('tanggal_selesai')) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($request->tanggal_mulai)->startOfDay(),
-                Carbon::parse($request->tanggal_selesai)->endOfDay(),
-            ]);
+        if ($request->filled('spot_id')) {
+            $query->where('spot_id', $request->spot_id);
         }
 
         $transaksis = $query->orderBy('created_at', 'desc')->get();
         $totalPendapatan = $transaksis->sum('total_harga');
 
-        $dataMeja = [];
-        foreach ($transaksis->groupBy('meja_id') as $mejaId => $list) {
-            $namaMeja = optional($list->first()->meja)->nama_meja ?? 'Meja #' . $mejaId;
-            $totalDurasi = $list->sum('durasi');
-            $totalPendapatanMeja = $list->sum('total_harga');
-            $persentase = $totalPendapatan > 0
-                ? ($totalPendapatanMeja / $totalPendapatan) * 100
-                : 0;
-
-            $dataMeja[] = [
-                'nama_meja' => $namaMeja,
-                'total_durasi' => $totalDurasi,
-                'total_pendapatan' => $totalPendapatanMeja,
-                'persentase' => $persentase,
-            ];
-        }
-
-        $pdf = Pdf::loadView(
-            'transaksi.laporan-pdf',
-            compact('transaksis', 'totalPendapatan', 'dataMeja')
-        )->setPaper('A4', 'landscape');
-
-        return $pdf->stream('laporan-pemancingan.pdf');
+        return view('transaksi.laporan', compact('transaksis', 'totalPendapatan', 'spots'));
     }
 }

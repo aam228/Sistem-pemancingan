@@ -9,7 +9,7 @@ return new class extends Migration
     {
         Schema::create('produk', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // BARIS BARU: Menambahkan user_id
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('nama_produk');
             $table->decimal('harga', 8, 2);
             $table->string('gambar')->nullable(); 

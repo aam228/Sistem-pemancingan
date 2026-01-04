@@ -27,29 +27,43 @@
                             <th class="ps-3">No</th>
                             <th>Spot</th>
                             <th>Pelanggan</th>
-                            <th>Durasi</th>
                             <th>Kecil</th>
                             <th>Babon</th>
                             <th>Total</th>
-                            <th>Mulai</th>
-                            <th>Selesai</th>
+                            <th>Metode Bayar</th> {{-- Kolom yang disesuaikan --}}
+                            <th>Waktu Sesi</th>
                             <th class="text-center pe-3">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="text-body">
                         @forelse ($transaksis as $index => $transaksi)
                         <tr>
-                            <td class="ps-3">{{ $transaksis->firstItem() + $index }}</td>
-                            <td class="fw-medium">{{ $transaksi->meja->nama_meja ?? 'N/A' }}</td>
+                            <td class="ps-3 text-body-secondary">{{ $transaksis->firstItem() + $index }}</td>
+                            <td>
+                                <span class="fw-bold text-primary">{{ $transaksi->spot->nama_spot ?? 'N/A' }}</span>
+                            </td>
                             <td class="text-nowrap">{{ Str::limit($transaksi->nama_pelanggan, 15) }}</td>
-                            <td class="text-nowrap">{{ $transaksi->durasi }} Jam</td>
-                            <td>{{ $transaksi->jumlah_ikan_kecil }}</td>
-                            <td class="text-nowrap">{{ $transaksi->berat_ikan_babon }} Kg</td>
+                            <td>{{ $transaksi->jumlah_ikan_kecil }} <small class="text-muted">ekor</small></td>
+                            <td class="text-nowrap">{{ $transaksi->berat_ikan_babon }} <small class="text-muted">Kg</small></td>
                             <td class="text-nowrap fw-bold text-success">
                                 Rp {{ number_format($transaksi->total_harga, 0, ',', '.') }}
                             </td>
-                            <td class="text-nowrap text-body-secondary small">{{ optional($transaksi->waktu_mulai)->format('d/m/y H:i') }}</td>
-                            <td class="text-nowrap text-body-secondary small">{{ optional($transaksi->waktu_selesai)->format('d/m/y H:i') }}</td>
+                            <td>
+                                @if($transaksi->paymentMethod)
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-medium text-body">{{ $transaksi->paymentMethod->nama_metode }}</span>
+                                        <small class="text-muted text-uppercase" style="font-size: 0.65rem;">
+                                            {{ $transaksi->paymentMethod->tipe }}
+                                        </small>
+                                    </div>
+                                @else
+                                    <span class="text-muted small italic">-</span>
+                                @endif
+                            </td>
+                            <td class="text-nowrap text-body-secondary small">
+                                <div><i class="far fa-clock me-1"></i> {{ optional($transaksi->waktu_mulai)->format('d/m/y H:i') }}</div>
+                                <div><i class="fas fa-check-circle me-1 text-success"></i> {{ optional($transaksi->waktu_selesai)->format('d/m/y H:i') }}</div>
+                            </td>
                             <td class="text-center pe-3">
                                 <button type="button" 
                                         class="btn btn-sm btn-outline-danger border-0 py-1" 
@@ -57,9 +71,6 @@
                                         data-bs-target="#deleteModal"
                                         data-transaksi-id="{{ $transaksi->id }}"
                                         data-nama-pelanggan="{{ $transaksi->nama_pelanggan }}"
-                                        data-nama-meja="{{ $transaksi->meja->nama_meja ?? 'N/A' }}"
-                                        data-jumlah-ikan-kecil="{{ $transaksi->jumlah_ikan_kecil }}"
-                                        data-berat-ikan-babon="{{ $transaksi->berat_ikan_babon }}"
                                         data-total-harga="{{ number_format($transaksi->total_harga, 0, ',', '.') }}">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
@@ -67,7 +78,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="text-center py-5 text-muted bg-body-tertiary">
+                            <td colspan="9" class="text-center py-5 text-muted bg-body-tertiary">
                                 <i class="fas fa-folder-open fa-2x mb-2 d-block opacity-25"></i>
                                 Tidak ada data histori transaksi.
                             </td>
@@ -79,30 +90,31 @@
         </div>
 
         <div class="card-footer bg-transparent border-top py-3">
-            <div class="d-flex justify-content-center">
-                {{ $transaksis->links() }}
+                <nav aria-label="Page navigation" class="mb-0">
+                    {{ $transaksis->links('pagination::bootstrap-5') }}
+                </nav>
             </div>
         </div>
     </div>
 </div>
 
+{{-- MODAL HAPUS --}}
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-body border shadow">
             <div class="modal-header border-bottom">
-                <h5 class="modal-title text-body">Konfirmasi Hapus</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title text-body fw-bold">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-body">
-                <p>Anda yakin ingin menghapus transaksi ini?</p>
+                <p>Anda yakin ingin menghapus transaksi ini? Data yang dihapus tidak dapat dikembalikan.</p>
                 <div class="bg-body-tertiary p-3 rounded border shadow-sm">
-                    <p class="mb-1"><strong>Spot:</strong> <span id="modal-nama-meja"></span></p>
                     <p class="mb-1"><strong>Pelanggan:</strong> <span id="modal-nama-pelanggan"></span></p>
-                    <p class="mb-1 fw-medium text-primary"><strong>Total Tagihan:</strong> Rp <span id="modal-total-harga"></span></p>
+                    <p class="mb-0 fw-medium text-danger"><strong>Total Tagihan:</strong> Rp <span id="modal-total-harga"></span></p>
                 </div>
             </div>
             <div class="modal-footer border-top">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Batal</button>
                 <form id="deleteForm" method="POST">
                     @csrf
                     @method('DELETE')
@@ -121,7 +133,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (deleteModal) {
         deleteModal.addEventListener('show.bs.modal', function(event) {
             const btn = event.relatedTarget;
-            document.getElementById('modal-nama-meja').textContent = btn.dataset.namaMeja;
             document.getElementById('modal-nama-pelanggan').textContent = btn.dataset.namaPelanggan;
             document.getElementById('modal-total-harga').textContent = btn.dataset.totalHarga;
             document.getElementById('deleteForm').action = `/transaksi/${btn.dataset.transaksiId}`;
@@ -131,33 +142,57 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-    /* Reset gaya manual agar mengikuti tema Bootstrap */
     .table thead th {
         background-color: var(--bs-tertiary-bg);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         padding-top: 12px !important;
         padding-bottom: 12px !important;
+        color: var(--bs-secondary-color);
     }
 
-    .table-responsive {
-        border-radius: 0;
-        overflow-x: auto;
-    }
-
-    /* Memastikan table tetap readable di mobile */
-    @media (max-width: 992px) {
-        .table { min-width: 900px; }
-    }
-
-    /* Efek hover yang lebih lembut sesuai tema */
     .table-hover tbody tr:hover {
         background-color: var(--bs-tertiary-bg) !important;
     }
 
     .pagination {
         margin-bottom: 0;
+        gap: 4px; 
+    }
+
+    .pagination .page-link {
+        border-radius: 6px !important; 
+        border: 1px solid var(--bs-border-color);
+        color: var(--bs-secondary-color);
+        padding: 6px 12px;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+
+    .pagination .page-link:hover {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: #fff;
+        transform: translateY(-1px); 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: #fff;
+        box-shadow: 0 4px 6px -1px rgba(var(--bs-primary-rgb), 0.3);
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background-color: var(--bs-tertiary-bg);
+        color: var(--bs-tertiary-color);
+        opacity: 0.6;
+    }
+
+    .btn-outline-danger i {
+        font-size: 0.85rem;
     }
 </style>
 @endpush

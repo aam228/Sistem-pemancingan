@@ -41,12 +41,12 @@
                                        value="{{ request('nama_pelanggan') }}">
                             </div>
                             <div class="col-md-3">
-                                <label for="meja_id" class="form-label text-body small fw-bold">Spot/Meja</label>
-                                <select name="meja_id" id="meja_id" class="form-select form-select-sm bg-body border-secondary-subtle">
-                                    <option value="">Semua Meja</option>
-                                    @foreach($mejas as $meja)
-                                        <option value="{{ $meja->id }}" {{ request('meja_id') == $meja->id ? 'selected' : '' }}>
-                                            {{ $meja->nama_meja ?? 'Meja #' . $meja->id }}
+                                <label for="spot_id" class="form-label text-body small fw-bold">Spot Pancing</label>
+                                <select name="spot_id" id="spot_id" class="form-select form-select-sm bg-body border-secondary-subtle">
+                                    <option value="">Semua Spot</option>
+                                    @foreach($spots as $spot)
+                                        <option value="{{ $spot->id }}" {{ request('spot_id') == $spot->id ? 'selected' : '' }}>
+                                            {{ $spot->nama_spot ?? 'Spot #' . $spot->id }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -95,7 +95,7 @@
                         <tr>
                             <th class="ps-3 py-2">ID</th>
                             <th>Pelanggan</th>
-                            <th>Meja</th>
+                            <th>Spot</th>
                             <th>Durasi</th>
                             <th>Kecil</th>
                             <th>Babon</th>
@@ -110,7 +110,7 @@
                         <tr>
                             <td class="ps-3">{{ $transaksi->id }}</td>
                             <td class="text-nowrap fw-medium">{{ Str::limit($transaksi->nama_pelanggan, 15) }}</td>
-                            <td>{{ $transaksi->meja->nama_meja ?? 'N/A' }}</td>
+                            <td>{{ $transaksi->spot->nama_spot ?? 'N/A' }}</td>
                             <td class="text-nowrap">{{ $transaksi->durasi }} Jam</td>
                             <td>{{ $transaksi->jumlah_ikan_kecil }}</td>
                             <td class="text-nowrap">{{ $transaksi->berat_ikan_babon }} Kg</td>
@@ -135,25 +135,4 @@
         </div>
     </div>
 </div>
-
-@push('styles')
-<style>
-    /* Reset gaya tabel agar dinamis */
-    .table thead th {
-        background-color: var(--bs-tertiary-bg);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 0.7rem;
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: var(--bs-tertiary-bg) !important;
-    }
-
-    /* Memastikan input date memiliki icon yang terlihat di dark mode */
-    [data-bs-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-    }
-</style>
-@endpush
 @endsection

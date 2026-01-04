@@ -1,15 +1,16 @@
 <?php
-// routes/web.php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\MejaController;
+use App\Http\Controllers\SpotController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\PesananMakananController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\PaymentMethodController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -25,14 +26,13 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Kolam (Meja)
-    Route::resource('meja', MejaController::class);
-    Route::post('/meja/{meja}/reset', [\App\Http\Controllers\MejaController::class, 'reset'])
-    ->name('meja.reset');
+    // Kolam (Spot)
+    Route::resource('spot', SpotController::class);
+    Route::post('/spot/{spot}/reset', [SpotController::class, 'reset'])->name('spot.reset');
 
     // Transaksi Pemancingan
     Route::prefix('transaksi')->controller(TransaksiController::class)->group(function () {
-        Route::get('create/{meja_id}', 'create')->name('transaksi.create');
+        Route::get('create/{spot_id}', 'create')->name('transaksi.create');
         Route::post('/', 'store')->name('transaksi.store');
         Route::get('{id}/selesai', 'selesaiForm')->name('transaksi.selesai.form');
         Route::put('{id}/selesai', 'selesaiProses')->name('transaksi.selesai.proses');
@@ -43,6 +43,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('laporan/cetak', 'cetakLaporan')->name('transaksi.cetak');
     });
 
+    Route::resource('payment-methods', PaymentMethodController::class);
+    
     // Pesanan Makanan/Minuman
     Route::get('pesanan/create/{transaksi_id}', [PesananMakananController::class, 'create'])->name('pesanan.create');
     Route::post('pesanan', [PesananMakananController::class, 'store'])->name('pesanan.store');
@@ -62,7 +64,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
 
-
+    // Member
+    Route::resource('members', MemberController::class);
 });
 
 require __DIR__.'/auth.php';

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Storage; // Import Storage facade
+use Illuminate\Support\Facades\Storage; 
 
 class SettingsController extends Controller
 {
@@ -60,7 +60,6 @@ class SettingsController extends Controller
         $user->theme = $request->theme;
         $user->save();
 
-        // Tambahkan response JSON jika kamu ingin update via AJAX tanpa reload
         if ($request->ajax()) {
             return response()->json(['success' => true, 'theme' => $user->theme]);
         }
@@ -76,12 +75,10 @@ class SettingsController extends Controller
 
         $user = Auth::user();
 
-        // Hapus gambar lama jika ada
         if ($user->profile_image) {
             Storage::disk('public')->delete($user->profile_image);
         }
 
-        // Simpan gambar baru
         $path = $request->file('profile_image')->store('profile_images', 'public');
         $user->profile_image = $path;
         $user->save();

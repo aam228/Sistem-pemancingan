@@ -211,7 +211,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Edit Modal Handler
     const editModal = document.getElementById('editModal');
     editModal.addEventListener('show.bs.modal', function(event) {
         const btn = event.relatedTarget;

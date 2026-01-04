@@ -8,25 +8,21 @@ use App\Models\PesananMakanan;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth; // <-- TAMBAHKAN INI
+use Illuminate\Support\Facades\Auth;
 
 class PesananMakananController extends Controller
 {
     public function create($transaksi_id)
     {
-        // Ambil transaksi beserta pesanan makanan dan meja terkait
-        $transaksi = Transaksi::with(['pesananMakanan.produk', 'meja'])
+        $transaksi = Transaksi::with(['pesananMakanan.produk', 'spot'])
             ->findOrFail($transaksi_id);
 
-        // Otorisasi: Pastikan transaksi ini milik user yang sedang login
         if ($transaksi->user_id !== Auth::id()) {
             abort(403, 'Anda tidak memiliki akses ke transaksi ini.');
         }
 
-        // Filter produk agar hanya menampilkan produk yang dimiliki oleh user yang sedang login
-        $produk = Auth::user()->produks()->get(); // <-- FILTER PRODUK DENGAN AUTH::USER()
+        $produk = Auth::user()->produks()->get();
         
-        // Ambil pesanan_makanan yang terkait dengan transaksi aktif ini
         $pesananMakanan = $transaksi->pesananMakanan;
 
         return view('pesanan.create', compact('transaksi', 'produk', 'pesananMakanan'));
@@ -43,7 +39,6 @@ class PesananMakananController extends Controller
         try {
             $transaksi = Transaksi::findOrFail($request->transaksi_id);
             
-            // Otorisasi: Pastikan transaksi ini milik user yang sedang login
             if ($transaksi->user_id !== Auth::id()) {
                 abort(403, 'Anda tidak memiliki akses untuk menambahkan pesanan ke transaksi ini.');
             }
@@ -64,17 +59,15 @@ class PesananMakananController extends Controller
                 if ($jumlah > 0) {
                     $produk = Produk::findOrFail($produk_id);
                     
-                    // Otorisasi: Pastikan produk ini juga milik user yang sedang login
                     if ($produk->user_id !== Auth::id()) {
                         throw new \Exception('Produk yang dipilih tidak valid atau bukan milik Anda.');
                     }
 
                     $subtotal = (float) $jumlah * (float) $produk->harga;
 
-                    // Buat pesanan makanan dan secara otomatis kaitkan dengan user yang sedang login
-                    Auth::user()->pesananMakanan()->create([ // <-- KUNCI PERUBAHAN DI SINI!
+                    Auth::user()->pesananMakanan()->create([
                         'transaksi_id' => $transaksi->id,
-                        'meja_id' => $transaksi->meja_id, // Meja ID juga bisa diambil dari transaksi
+                        'spot_id' => $transaksi->spot_id, 
                         'produk_id' => $produk->id,
                         'jumlah' => $jumlah,
                         'subtotal' => $subtotal,
@@ -91,11 +84,9 @@ class PesananMakananController extends Controller
         }
     }
 
-    // Metode tambahan yang mungkin perlu disesuaikan (jika ada di controller ini)
     public function redirectFromTransaksi($transaksi_id)
     {
         $transaksi = Transaksi::findOrFail($transaksi_id);
-        // Otorisasi: Pastikan transaksi ini milik user yang sedang login
         if ($transaksi->user_id !== Auth::id()) {
             abort(403, 'Anda tidak memiliki akses ke transaksi ini.');
         }
@@ -105,7 +96,6 @@ class PesananMakananController extends Controller
     public function getPesananByTransaksi($transaksi_id)
     {
         $transaksi = Transaksi::findOrFail($transaksi_id);
-        // Otorisasi: Pastikan transaksi ini milik user yang sedang login
         if ($transaksi->user_id !== Auth::id()) {
             return response()->json(['error' => 'Anda tidak memiliki akses ke transaksi ini.'], 403);
         }

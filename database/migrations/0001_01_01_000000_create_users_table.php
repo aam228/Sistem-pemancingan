@@ -15,6 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            
+            // Hapus ->after(...), urutan otomatis mengikuti letak baris kode ini
+            $table->string('profile_image')->nullable();
+            $table->string('theme')->default('light');
+            
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

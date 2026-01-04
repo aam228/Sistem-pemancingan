@@ -11,26 +11,34 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-            {{-- Card menggunakan bg-body agar mengikuti tema --}}
             <div class="card shadow-sm border bg-body">
                 <div class="card-header bg-transparent border-bottom text-center py-4">
                     <div class="mb-3">
-                        {{-- Icon menggunakan bg-opacity agar tetap lembut di dark mode --}}
                         <div class="bg-primary bg-opacity-10 d-inline-block p-3 rounded-circle">
                             <i class="fas fa-fish fa-2x text-primary"></i>
                         </div>
                     </div>
                     <h4 class="mb-1 text-body fw-bold">Mulai Sesi</h4>
-                    <p class="text-muted mb-0">Kolam: <span class="text-body fw-semibold">{{ $meja->nama_meja }}</span></p>
+                    <p class="text-muted mb-0">Spot / Lapak: <span class="text-body fw-semibold">{{ $spot->nama_spot }}</span></p>
                 </div>
 
                 <div class="card-body p-4">
                     <form action="{{ route('transaksi.store') }}" method="POST" id="sesiForm">
                         @csrf
-                        <input type="hidden" name="meja_id" value="{{ $meja->id }}">
+                        <input type="hidden" name="spot_id" value="{{ $spot->id }}">
+
+                        <div class="mb-3">
+                            <label class="form-label text-body fw-medium small">Pilih Member (Opsional)</label>
+                            <select name="member_id" class="form-select bg-body-tertiary border-secondary-subtle">
+                                <option value="">-- Bukan Member --</option>
+                                @foreach($members as $member)
+                                    <option value="{{ $member->id }}">{{ $member->nama }} ({{ $member->kode_member }})</option>
+                                @endforeach
+                            </select>
+                        </div>
 
                         <div class="mb-4">
-                            <label for="nama_pelanggan" class="form-label text-body fw-medium">
+                            <label for="nama_pelanggan" class="form-label text-body fw-medium small">
                                 Nama Pemancing
                             </label>
                             <input type="text" 
@@ -42,7 +50,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="tipe_sesi" class="form-label text-body fw-medium">
+                            <label for="tipe_sesi" class="form-label text-body fw-medium small">
                                 Pilih Sesi Pemancingan
                             </label>
                             <select name="tipe_sesi" 
@@ -51,16 +59,16 @@
                                     required>
                                 <option value="" class="text-muted">-- Pilih Sesi --</option>
                                 <option value="pagi">
-                                    Pagi (05.00 - 10.00) - Rp {{ number_format($meja->tarif_pagi, 0, ',', '.') }}
+                                    Pagi (05.00 - 10.00) - Rp {{ number_format($spot->tarif_pagi, 0, ',', '.') }}
                                 </option>
                                 <option value="siang">
-                                    Siang (10.00 - 14.00) - Rp {{ number_format($meja->tarif_siang, 0, ',', '.') }}
+                                    Siang (10.00 - 14.00) - Rp {{ number_format($spot->tarif_siang, 0, ',', '.') }}
                                 </option>
                                 <option value="sore">
-                                    Sore (14.00 - 18.00) - Rp {{ number_format($meja->tarif_sore, 0, ',', '.') }}
+                                    Sore (14.00 - 18.00) - Rp {{ number_format($spot->tarif_sore, 0, ',', '.') }}
                                 </option>
                                 <option value="malam">
-                                    Malam (18.00 - 06.00) - Rp {{ number_format($meja->tarif_malam, 0, ',', '.') }}
+                                    Malam (18.00 - 06.00) - Rp {{ number_format($spot->tarif_malam, 0, ',', '.') }}
                                 </option>
                             </select>
                             <div class="form-text text-muted mt-2">
@@ -69,10 +77,10 @@
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mt-5">
-                            <a href="{{ route('dashboard') }}" class="btn btn-link text-decoration-none text-light p-2 bg-danger">
-                                <i class="fas fa-arrow-left me-1"></i> Batal
+                            <a href="{{ route('dashboard') }}" class="btn btn-outline-danger btn-sm px-3">
+                                <i class="fas fa-times me-1"></i> Batal
                             </a>
-                            <button type="submit" class="btn btn-primary px-4 shadow-sm" id="submitBtn">
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm fw-bold" id="submitBtn">
                                 <i class="fas fa-play me-2"></i>Mulai Sesi
                             </button>
                         </div>
@@ -86,14 +94,11 @@
 
 @push('styles')
 <style>
-    /* Transisi halus untuk input saat fokus */
     .form-control:focus, .form-select:focus {
         background-color: var(--bs-body-bg) !important;
         border-color: var(--bs-primary);
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
     }
-
-    /* Penyesuaian select option untuk beberapa browser */
     .form-select option {
         background-color: var(--bs-body-bg);
         color: var(--bs-body-color);

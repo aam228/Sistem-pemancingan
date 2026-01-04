@@ -9,16 +9,13 @@ return new class extends Migration
     {
         Schema::create('pesanan_makanan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // BARIS BARU: Menambahkan user_id
-            $table->unsignedBigInteger('transaksi_id');
-            $table->unsignedBigInteger('meja_id');
-            $table->unsignedBigInteger('produk_id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('transaksi_id')->constrained('transaksi')->onDelete('cascade');
+            $table->foreignId('spot_id')->constrained('spots')->onDelete('cascade');
+            $table->foreignId('produk_id')->constrained('produk')->onDelete('cascade');
             $table->integer('jumlah');
-            $table->decimal('subtotal', 8, 2);
+            $table->decimal('subtotal', 15, 2);
             $table->timestamps();
-            $table->foreign('transaksi_id')->references('id')->on('transaksi')->onDelete('cascade');
-            $table->foreign('meja_id')->references('id')->on('meja')->onDelete('cascade');
-            $table->foreign('produk_id')->references('id')->on('produk')->onDelete('cascade');
         });
     }
 

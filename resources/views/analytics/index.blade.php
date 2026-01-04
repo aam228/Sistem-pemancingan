@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Analytics')
+@section('title', 'Analytics Bisnis')
 
 @section('head')
     {{-- Memastikan Library ter-load di awal --}}
@@ -15,9 +15,11 @@
             <h4 class="mb-1 text-body fw-bold">
                 <i class="fa-solid fa-chart-line me-2 text-primary"></i>Statistik Bisnis
             </h4>
+            <p class="text-muted small mb-0">Laporan performa operasional Combro Fishing</p>
         </div>
     </div>
 
+    {{-- Tab Navigation --}}
     <ul class="nav nav-tabs border-bottom mb-4">
         <li class="nav-item">
             <button class="nav-link fw-bold px-4 py-3" 
@@ -28,15 +30,16 @@
         </li>
         <li class="nav-item">
             <button class="nav-link fw-bold px-4 py-3" 
-                    :class="activeTab === 'meja' ? 'active border-primary border-bottom border-3 text-primary' : 'text-muted border-0'"
-                    @click="activeTab = 'meja'">
+                    :class="activeTab === 'spot' ? 'active border-primary border-bottom border-3 text-primary' : 'text-muted border-0'"
+                    @click="activeTab = 'spot'">
                 <i class="fas fa-map-marker-alt me-2"></i>Analisis Spot
             </button>
         </li>
     </ul>
 
     <div>
-        <div x-show="activeTab === 'ringkasan'">
+        {{-- TAB 1: RINGKASAN --}}
+        <div x-show="activeTab === 'ringkasan'" class="animate__animated animate__fadeIn">
             <div class="row g-3 mb-4">
                 <div class="col-6 col-lg-3">
                     <div class="card bg-primary text-white border-0 shadow-sm">
@@ -82,14 +85,15 @@
             </div>
         </div>
 
-        <div x-show="activeTab === 'meja'">
+        {{-- TAB 2: ANALISIS SPOT --}}
+        <div x-show="activeTab === 'spot'" class="animate__animated animate__fadeIn">
             <div class="row g-4">
                 <div class="col-lg-7">
                     <div class="card bg-body border shadow-sm h-100">
                         <div class="card-body p-4">
-                            <h6 class="fw-bold text-body mb-4"><i class="fas fa-fish me-2 text-success"></i>Pendapatan per Spot</h6>
+                            <h6 class="fw-bold text-body mb-4"><i class="fas fa-water me-2 text-success"></i>Pendapatan per Spot Pancing</h6>
                             <div style="position: relative; height:350px; width:100%">
-                                <canvas id="chartMeja"></canvas>
+                                <canvas id="chartSpot"></canvas>
                             </div>
                         </div>
                     </div>
@@ -129,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: {!! json_encode($pendapatanPerHari->pluck('tanggal')) !!},
             datasets: [{
+                label: 'Pendapatan',
                 data: {!! json_encode($pendapatanPerHari->pluck('total')) !!},
                 borderColor: '#0d6efd',
                 backgroundColor: 'rgba(13, 110, 253, 0.1)',
@@ -136,23 +141,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 tension: 0.4
             }]
         },
-        options: { plugins: { legend: { display: false } } }
+        options: { 
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Total: Rp ' + new Intl.NumberFormat('id-ID').format(context.raw);
+                        }
+                    }
+                }
+            } 
+        }
     });
 
-    // 2. Chart Meja
-    new Chart(document.getElementById('chartMeja'), {
+    // 2. Chart Spot (Disesuaikan variabel dari Controller)
+    new Chart(document.getElementById('chartSpot'), {
         type: 'bar',
         data: {
-            labels: {!! json_encode($pendapatanPerMeja->pluck('nama_meja')) !!},
+            labels: {!! json_encode($pendapatanPerSpot->pluck('nama_spot')) !!},
             datasets: [{
-                data: {!! json_encode($pendapatanPerMeja->pluck('total')) !!},
+                data: {!! json_encode($pendapatanPerSpot->pluck('total')) !!},
                 backgroundColor: '#198754',
                 borderRadius: 6
             }]
         },
         options: {
             indexAxis: 'y',
-            plugins: { legend: { display: false } }
+            plugins: { legend: { display: false } },
+            scales: {
+                x: {
+                    ticks: {
+                        callback: function(value) {
+                            return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                        }
+                    }
+                }
+            }
         }
     });
 
@@ -167,7 +192,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 borderRadius: 4
             }]
         },
-        options: { plugins: { legend: { display: false } } }
+        options: { 
+            plugins: { 
+                legend: { display: false } 
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
     });
 });
 </script>

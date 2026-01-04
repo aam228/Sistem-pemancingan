@@ -2,32 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Meja;
+use App\Models\Spot; 
 use App\Models\Transaksi;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-
     public function index()
     {
         $user = Auth::user();
+        if (!$user) return redirect()->route('login');
 
-        $mejas = $user
-            ? $user->mejas()->get()
-            : collect();
+        $spots = $user->spots()->get();
 
-        $transaksis_berjalan = $user
-            ? $user->transaksis()
-                ->with('meja')
-                ->where('waktu_selesai', '>', now())
-                ->get()
-            : collect();
+        $transaksis_berjalan = $user->transaksis()
+            ->with('spot') 
+            ->whereNull('jumlah_ikan_kecil') 
+            ->get();
 
-        return view('dashboard', compact(
-            'mejas',
-            'transaksis_berjalan'
-        ));
+        return view('dashboard', compact('spots', 'transaksis_berjalan'));
     }
 }
