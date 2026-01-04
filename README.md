@@ -1,59 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="docs/screenshots/Dashboard.png" width="720" alt="Combro Fishing Management System">
 </p>
 
-## About Laravel
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-11-red">
+  <img src="https://img.shields.io/badge/PHP-8.2-blue">
+  <img src="https://img.shields.io/badge/Database-MySQL-orange">
+  <img src="https://img.shields.io/badge/License-MIT-green">
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# 🎣 Combro Fishing Management System
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Combro Fishing Management System** adalah aplikasi manajemen operasional kolam pemancingan berbasis web yang dibangun menggunakan **Laravel 11**.  
+Sistem ini dirancang untuk mendigitalisasi proses operasional harian secara terintegrasi, mulai dari pengelolaan lapak, member, transaksi sesi pancing, hingga laporan dan analisis bisnis.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## ✨ Fitur Utama
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Dashboard Real-Time**  
+  Panel kendali utama untuk memantau seluruh lapak secara langsung, membuka sesi, mencatat pesanan, dan memproses pembayaran.
 
-## Laravel Sponsors
+- **Manajemen Spot (Lapak)**  
+  Pengelolaan lapak pancing dengan tarif dinamis berdasarkan waktu (Pagi / Siang / Sore / Malam) yang otomatis tampil di Dashboard.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Mulai Sesi (Transaksi Baru)**  
+  Form pendaftaran pelanggan yang diakses langsung dari lapak kosong di Dashboard dan terhubung dengan data member.
 
-### Premium Partners
+- **Selesai Sesi & Pembayaran**  
+  Penutupan sesi pancing dengan perhitungan otomatis serta pilihan metode pembayaran yang telah dikonfigurasi.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **Manajemen Member**  
+  Pengelolaan pelanggan setia dengan sistem diskon dan poin otomatis saat transaksi.
 
-## Contributing
+- **Kelola Produk & Pesanan**  
+  CRUD menu makanan dan minuman serta pencatatan pesanan tambahan selama sesi pancing.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- **Laporan Keuangan**  
+  Rekap transaksi otomatis dengan fitur ekspor laporan ke PDF.
 
-## Code of Conduct
+- **Analytics**  
+  Visualisasi data transaksi berupa grafik tren pendapatan, jam sibuk, dan performa tiap lapak.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 📸 Screenshots
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+<p align="center">
+  <img src="docs/screenshots/Dashboard.png" width="400">
+  <img src="docs/screenshots/Analis.png" width="400">
+</p>
 
-## License
+<p align="center">
+  <img src="docs/screenshots/Members.png" width="400">
+  <img src="docs/screenshots/Produk.png" width="400">
+</p>
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+<p align="center">
+  <img src="docs/screenshots/Histori.png" width="400">
+  <img src="docs/screenshots/Laporan.png" width="400">
+</p>
+
+---
+
+## 🛠️ Tech Stack
+
+| Komponen | Teknologi |
+|--------|-----------|
+| Framework | Laravel 11 |
+| Frontend | Blade, Bootstrap 5, Alpine.js |
+| Database | MySQL |
+| Charts | Chart.js |
+| PDF | Laravel DomPDF |
+| Icons | Font Awesome |
+
+---
+
+## ⚙️ Installation
+
+```bash
+git clone https://github.com/aam228/Sistem-pemancingan.git
+cd Sistem-pemancingan
+composer install
+npm install && npm run dev
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan storage:link
+php artisan serve
+```
+
+## 📂 Project Structure
+
+```bash
+app/
+ ├── Http/Controllers
+ ├── Models
+database/
+ ├── migrations
+ ├── seeders
+resources/
+ ├── views
+routes/
+ └── web.php
+docs/
+ └── screenshots
+
