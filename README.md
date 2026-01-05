@@ -11,14 +11,14 @@
 
 ---
 
-# 🎣 Combro Fishing Management System
+# Combro Fishing Management System
 
 **Combro Fishing Management System** adalah aplikasi manajemen operasional kolam pemancingan berbasis web yang dibangun menggunakan **Laravel 11**.  
 Sistem ini dirancang untuk mendigitalisasi proses operasional harian secara terintegrasi, mulai dari pengelolaan lapak, member, transaksi sesi pancing, hingga laporan dan analisis bisnis.
 
 ---
 
-## ✨ Fitur Utama
+## Fitur Utama
 
 - **Dashboard Real-Time**  
   Panel kendali utama untuk memantau seluruh lapak secara langsung, membuka sesi, mencatat pesanan, dan memproses pembayaran.
@@ -46,7 +46,7 @@ Sistem ini dirancang untuk mendigitalisasi proses operasional harian secara teri
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 <p align="center">
   <img src="docs/screenshots/Dashboard.png" width="400">
@@ -70,7 +70,7 @@ Sistem ini dirancang untuk mendigitalisasi proses operasional harian secara teri
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Komponen | Teknologi |
 |--------|-----------|
@@ -83,7 +83,7 @@ Sistem ini dirancang untuk mendigitalisasi proses operasional harian secara teri
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 ```bash
 git clone https://github.com/aam228/Sistem-pemancingan.git
@@ -97,7 +97,7 @@ php artisan storage:link
 php artisan serve
 ```
 
-## 📂 Project Structure
+## Project Structure
 
 ```bash
 app/
