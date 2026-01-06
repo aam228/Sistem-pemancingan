@@ -110,6 +110,4 @@ resources/
  ├── views
 routes/
  └── web.php
-docs/
- └── screenshots
 
