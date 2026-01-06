@@ -32,7 +32,7 @@
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
                 @foreach ($spots as $spot)
                 <div class="col">
-                    <div class="card h-100 bg-body border shadow-sm hover-card">
+                    <div class="card h-100 bg-body border shadow-sm hover-card position-relative">
                         <div class="card-header bg-transparent border-bottom py-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
@@ -74,19 +74,21 @@
                             </div>
                         </div>
                         
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <small class="text-muted d-block mb-1">Status</small>
-                                @if($spot->status == 'digunakan')
-                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle">Digunakan</span>
-                                @elseif($spot->status == 'perawatan')
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle">Perawatan</span>
-                                @else
-                                    <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle">Tersedia</span>
-                                @endif
-                            </div>
-                            
-                            <div class="border-top pt-3">
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <small class="text-muted d-block mb-1">Status</small>
+                            @if($spot->status == 'digunakan')
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle">Digunakan</span>
+                            @else
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle">Tersedia</span>
+                            @endif
+                        </div>
+                        
+                        {{-- Bagian Melayang --}}
+                        <div class="reveal-prices">
+                            {{-- Gunakan card-body lagi di sini agar paddingnya otomatis pas (sejajar atasnya) --}}
+                            <div class="card-body border-top border-secondary-subtle">
+                                <small class="text-muted d-block mb-2 fw-bold text-uppercase" style="font-size: 0.65rem;">Daftar Tarif Sesi</small>
                                 <table class="table table-sm table-borderless mb-0">
                                     <tbody class="small">
                                         <tr>
@@ -109,6 +111,7 @@
                                 </table>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
                 @endforeach
@@ -265,4 +268,45 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+@endpush
+
+@push('styles')
+<style>
+    .hover-card { 
+        transition: all 0.2s ease-in-out;
+        position: relative;
+        z-index: 1;
+    }
+
+    .reveal-prices {
+        display: none;
+        position: absolute;
+        top: 100%; 
+        left: -1px; 
+        right: -1px;
+        background-color: var(--bs-body-bg);
+        z-index: 999;
+        border: 1px solid var(--bs-primary); 
+        border-top: none; 
+        border-bottom-left-radius: 0.75rem;
+        border-bottom-right-radius: 0.75rem;
+        box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Saat Hover */
+    .hover-card:hover { 
+        z-index: 1000;
+        border-color: var(--bs-primary) !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+    }
+
+    .hover-card:hover .reveal-prices {
+        display: block;
+    }
+
+    .inner-padding {
+        padding: 1rem; 
+    }
+</style>
 @endpush
