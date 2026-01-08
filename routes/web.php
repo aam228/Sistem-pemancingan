@@ -37,7 +37,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('{id}/selesai', 'selesaiForm')->name('transaksi.selesai.form');
         Route::put('{id}/selesai', 'selesaiProses')->name('transaksi.selesai.proses');
         Route::post('{id}/batal', 'batal')->name('transaksi.batal');
-        Route::delete('{transaksi}', 'hapus')->name('transaksi.hapus');
+        Route::delete('{transaksi}', 'destroy')->name('transaksi.hapus');
         Route::get('histori', 'histori')->name('transaksi.histori');
         Route::get('laporan', 'laporan')->name('transaksi.laporan');
         Route::get('laporan/cetak', 'cetakLaporan')->name('transaksi.cetak');

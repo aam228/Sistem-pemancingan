@@ -11,12 +11,7 @@ class PaymentMethodController extends Controller
     public function index()
     {
         $methods = PaymentMethod::orderBy('tipe')->get();
-        return view('payment_methods.index', compact('methods'));
-    }
-
-    public function create()
-    {
-        return view('payment_methods.create');
+        return view('payment-methods.index', compact('methods'));
     }
 
     public function store(Request $request)
@@ -47,12 +42,6 @@ class PaymentMethodController extends Controller
         return redirect()
             ->route('payment-methods.index')
             ->with('success', 'Payment method berhasil ditambahkan');
-    }
-
-
-    public function edit(PaymentMethod $paymentMethod)
-    {
-        return view('payment_methods.edit', compact('paymentMethod'));
     }
 
     public function update(Request $request, PaymentMethod $paymentMethod)

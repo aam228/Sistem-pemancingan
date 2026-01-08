@@ -18,28 +18,31 @@ class AnalyticsController extends Controller
         $month = $now->format('m');
         $year = $now->year;
 
-        $loggedInUserId = Auth::id();
+        $userId = Auth::id();
 
-        $pendapatanHariIni = Transaksi::where('user_id', $loggedInUserId)
+        $pendapatanHariIni = Transaksi::where('user_id', $userId)
                                 ->whereDate('waktu_mulai', $today)
                                 ->sum('total_harga');
 
-        $pendapatanBulanIni = Transaksi::where('user_id', $loggedInUserId)
+        $pendapatanBulanIni = Transaksi::where('user_id', $userId)
                                 ->whereMonth('waktu_mulai', $month)
                                 ->whereYear('waktu_mulai', $year)
                                 ->sum('total_harga');
 
-        $jumlahTransaksi = Transaksi::where('user_id', $loggedInUserId)
+        $jumlahTransaksi = Transaksi::where('user_id', $userId)
                                 ->whereMonth('waktu_mulai', $month)
                                 ->whereYear('waktu_mulai', $year)
                                 ->count();
 
-        $rataRataDurasi = Transaksi::where('user_id', $loggedInUserId)
+        // Ini untuk melihat sesi mana yang paling sering dipilih pelanggan bulan ini
+        $distribusiSesi = Transaksi::where('user_id', $userId)
                                 ->whereMonth('waktu_mulai', $month)
                                 ->whereYear('waktu_mulai', $year)
-                                ->avg('durasi') ?? 0;
+                                ->select('tipe_sesi', DB::raw('count(*) as jumlah'))
+                                ->groupBy('tipe_sesi')
+                                ->get();
 
-        $pendapatanPerHari = Transaksi::where('user_id', $loggedInUserId)
+        $pendapatanPerHari = Transaksi::where('user_id', $userId)
                                 ->select(
                                     DB::raw('DATE(waktu_mulai) as tanggal'),
                                     DB::raw('SUM(total_harga) as total')
@@ -49,14 +52,13 @@ class AnalyticsController extends Controller
                                 ->orderBy('tanggal', 'ASC')
                                 ->get();
 
-        $pendapatanPerSpot = DB::table('transaksi')
-                                ->join('spots', 'transaksi.spot_id', '=', 'spots.id') 
-                                ->where('transaksi.user_id', $loggedInUserId)
-                                ->select('spots.nama_spot', DB::raw('SUM(transaksi.total_harga) as total')) 
-                                ->groupBy('spots.nama_spot')
+        $pendapatanPerSpot = Transaksi::where('transaksi.user_id', $userId)
+                                ->join('spots', 'transaksi.spot_id', '=', 'spots.id')
+                                ->select('spots.nama_spot', DB::raw('SUM(transaksi.total_harga) as total'))
+                                ->groupBy('spots.nama_spot', 'spots.id') // Tambahkan ID agar SQL strict tidak error
                                 ->get();
 
-        $jamSibuk = Transaksi::where('user_id', $loggedInUserId)
+        $jamSibuk = Transaksi::where('user_id', $userId)
                             ->select(
                                 DB::raw('HOUR(waktu_mulai) as jam'),
                                 DB::raw('COUNT(*) as jumlah')
@@ -69,7 +71,7 @@ class AnalyticsController extends Controller
             'pendapatanHariIni',
             'pendapatanBulanIni',
             'jumlahTransaksi',
-            'rataRataDurasi',
+            'distribusiSesi',
             'pendapatanPerHari',
             'pendapatanPerSpot',
             'jamSibuk'

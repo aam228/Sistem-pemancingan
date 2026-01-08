@@ -5,7 +5,7 @@
                 
                 {{-- Logo atau Nama Sistem --}}
                 <div class="text-center mb-4">
-                    <h3 class="fw-bold text-primary"><i class="fas fa-billiards me-2"></i>Billiard Pro</h3>
+                    <h3 class="fw-bold text-primary"><i class="fas fa-billiards me-2"></i>Combro Fishing</h3>
                     <p class="text-muted small">Silakan login untuk mengelola sistem</p>
                 </div>
 

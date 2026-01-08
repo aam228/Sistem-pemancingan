@@ -178,7 +178,8 @@ class TransaksiController extends Controller
     {
         $spots = Auth::user()->spots; 
 
-        $query = Auth::user()->transaksis()->with('spot');
+        // Tambahkan with('paymentMethod') agar tidak berat saat loading data
+        $query = Auth::user()->transaksis()->with(['spot', 'paymentMethod']);
 
         if ($request->filled('tanggal_mulai') && $request->filled('tanggal_selesai')) {
             $query->whereBetween('waktu_mulai', [
@@ -196,8 +197,42 @@ class TransaksiController extends Controller
         }
 
         $transaksis = $query->orderBy('created_at', 'desc')->get();
+        
+        // Hitung Total Keseluruhan
         $totalPendapatan = $transaksis->sum('total_harga');
 
-        return view('transaksi.laporan', compact('transaksis', 'totalPendapatan', 'spots'));
+        // Hitung Total per Metode dari hasil filter di atas (Simple & Cepat)
+        $totalCash = $transaksis->where('paymentMethod.tipe', 'cash')->sum('total_harga');
+        $totalTransfer = $transaksis->where('paymentMethod.tipe', 'transfer')->sum('total_harga');
+        $totalQris = $transaksis->where('paymentMethod.tipe', 'qris')->sum('total_harga');
+
+        return view('transaksi.laporan', compact(
+            'transaksis', 
+            'totalPendapatan', 
+            'totalCash', 
+            'totalTransfer', 
+            'totalQris', 
+            'spots'
+        ));
+    }
+
+    public function destroy($id)
+    {
+        $transaksi = Transaksi::findOrFail($id);
+
+        if ($transaksi->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        return DB::transaction(function () use ($transaksi) {
+            
+            if (!$transaksi->waktu_selesai) {
+                $transaksi->spot->update(['status' => 'tersedia']);
+            }
+
+            $transaksi->delete();
+
+            return redirect()->back()->with('success', 'Transaksi berhasil dihapus permanen.');
+        });
     }
 }

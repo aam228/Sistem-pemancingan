@@ -18,7 +18,6 @@ return new class extends Migration
 
             $table->string('nama_pelanggan');
             $table->enum('tipe_sesi', ['pagi', 'siang', 'sore', 'malam', 'pagi_sore', 'full']);
-            $table->integer('durasi')->default(0);
             $table->decimal('total_harga', 15, 2); 
             $table->timestamp('waktu_mulai');
             $table->timestamp('waktu_selesai');
