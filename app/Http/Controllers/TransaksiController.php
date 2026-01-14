@@ -157,6 +157,31 @@ class TransaksiController extends Controller
         });
     }
 
+    public function tambahSesi(Request $request, $id)
+    {
+        $transaksi = Transaksi::with('spot')->findOrFail($id);
+        $sesiBaru = $request->input('sesi_baru'); 
+
+        $kolomHarga = 'tarif_' . $sesiBaru;
+        $hargaTambahan = $transaksi->spot->$kolomHarga ?? 0;
+
+        $sesiLama = $transaksi->tipe_sesi;
+        
+        if (str_contains($sesiLama, $sesiBaru)) {
+            return back()->with('error', "Sesi $sesiBaru sudah terdaftar di transaksi ini.");
+        }
+
+        $tipeSesiUpdated = $sesiLama . ', ' . $sesiBaru;
+
+        $transaksi->update([
+            'tipe_sesi' => $tipeSesiUpdated,
+            'total_harga' => $transaksi->total_harga + $hargaTambahan,
+            'waktu_selesai' => \Carbon\Carbon::parse($transaksi->waktu_selesai)->addHours(4),
+        ]);
+
+        return back()->with('success', "Sesi $sesiBaru berhasil ditambahkan. Total harga sekarang: Rp " . number_format($transaksi->total_harga));
+    }
+
     public function batal($id)
     {
         $transaksi = Transaksi::with('spot')->findOrFail($id);
@@ -235,4 +260,78 @@ class TransaksiController extends Controller
             return redirect()->back()->with('success', 'Transaksi berhasil dihapus permanen.');
         });
     }
+
+    public function cetak(Request $request)
+    {
+        $query = Auth::user()->transaksis()
+            ->with(['spot', 'paymentMethod']);
+
+        if ($request->filled('tanggal_mulai') && $request->filled('tanggal_selesai')) {
+            $query->whereBetween('waktu_mulai', [
+                Carbon::parse($request->tanggal_mulai)->startOfDay(),
+                Carbon::parse($request->tanggal_selesai)->endOfDay(),
+            ]);
+        }
+
+        if ($request->filled('nama_pelanggan')) {
+            $query->where('nama_pelanggan', 'like', '%' . $request->nama_pelanggan . '%');
+        }
+
+        if ($request->filled('spot_id')) {
+            $query->where('spot_id', $request->spot_id);
+        }
+
+        // ================= AMBIL DATA =================
+
+        $transaksis = $query->orderBy('created_at', 'desc')->get();
+
+        // ================= RINGKASAN =================
+
+        $totalPendapatan  = $transaksis->sum('total_harga');
+        $totalIkanKecil   = $transaksis->sum('jumlah_ikan_kecil');
+        $totalBeratBaboon = $transaksis->sum('berat_ikan_babon');
+
+        $dataSpot = $transaksis
+            ->groupBy(fn ($t) => $t->spot->nama_spot ?? 'Tidak Diketahui')
+            ->map(function ($items, $namaSpot) use ($totalPendapatan) {
+                $total = $items->sum('total_harga');
+
+                return [
+                    'nama_spot'         => $namaSpot,
+                    'jumlah_transaksi' => $items->count(),
+                    'total_pendapatan' => $total,
+                    'persentase'       => $totalPendapatan > 0
+                        ? round(($total / $totalPendapatan) * 100, 2)
+                        : 0,
+                ];
+            })
+            ->values();
+
+        // ================= METODE PEMBAYARAN =================
+
+        $dataPembayaran = $transaksis
+            ->groupBy(fn ($t) => optional($t->paymentMethod)->nama_metode ?? 'Tidak Diketahui')
+            ->map(function ($items, $namaMetode) {
+                return [
+                    'nama_metode' => $namaMetode,
+                    'jumlah'      => $items->count(),
+                    'total'       => $items->sum('total_harga'),
+                ];
+            })
+            ->values();
+
+        // ================= CETAK PDF =================
+
+        $pdf = Pdf::loadView('transaksi.cetak_laporan', compact(
+            'transaksis',
+            'totalPendapatan',
+            'totalIkanKecil',
+            'totalBeratBaboon',
+            'dataSpot',
+            'dataPembayaran'
+        ))->setPaper('a4', 'portrait');
+
+        return $pdf->stream('laporan-keuangan.pdf');
+    }
+
 }

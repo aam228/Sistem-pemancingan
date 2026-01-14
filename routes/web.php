@@ -40,7 +40,10 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('{transaksi}', 'destroy')->name('transaksi.hapus');
         Route::get('histori', 'histori')->name('transaksi.histori');
         Route::get('laporan', 'laporan')->name('transaksi.laporan');
-        Route::get('laporan/cetak', 'cetakLaporan')->name('transaksi.cetak');
+        Route::get('laporan/keuangan/cetak', 'cetak')
+            ->name('transaksi.cetak');
+        Route::post('/transaksi/{id}/tambah-sesi', [TransaksiController::class, 'tambahSesi'])
+            ->name('transaksi.tambah-sesi');
     });
 
     Route::resource('payment-methods', PaymentMethodController::class);

@@ -107,7 +107,6 @@
                             @endif
                         </div>
 
-                        {{-- Panel Info Transaksi Aktif --}}
                         @if($transaksi_spot)
                         <div class="border rounded p-3 mb-3 bg-body-tertiary shadow-sm">
                             <div class="mb-2">
@@ -127,13 +126,46 @@
                             </div>
 
                             <div class="d-grid gap-2">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle w-100 fw-bold" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-plus-circle me-1"></i> Tambah Sesi
+                                    </button>
+                                    <ul class="dropdown-menu shadow w-100">
+                                        <form action="{{ route('transaksi.tambah-sesi', $transaksi_spot->id) }}" method="POST">
+                                            @csrf
+                                            <li>
+                                                <button type="submit" name="sesi_baru" value="pagi" class="dropdown-item d-flex justify-content-between">
+                                                    <span>Pagi</span> <small class="text-muted">Rp{{ number_format($transaksi_spot->spot->tarif_pagi, 0, ',', '.') }}</small>
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button type="submit" name="sesi_baru" value="siang" class="dropdown-item d-flex justify-content-between">
+                                                    <span>Siang</span> <small class="text-muted">Rp{{ number_format($transaksi_spot->spot->tarif_siang, 0, ',', '.') }}</small>
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button type="submit" name="sesi_baru" value="sore" class="dropdown-item d-flex justify-content-between">
+                                                    <span>Sore</span> <small class="text-muted">Rp{{ number_format($transaksi_spot->spot->tarif_sore, 0, ',', '.') }}</small>
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button type="submit" name="sesi_baru" value="malam" class="dropdown-item d-flex justify-content-between">
+                                                    <span>Malam</span> <small class="text-muted">Rp{{ number_format($transaksi_spot->spot->tarif_malam, 0, ',', '.') }}</small>
+                                                </button>
+                                            </li>
+                                        </form>
+                                    </ul>
+                                </div>
+                                
+                                {{-- Tombol Utama --}}
                                 <a href="{{ route('transaksi.selesai.form', $transaksi_spot->id) }}" 
-                                   class="btn btn-sm {{ $is_overtime ? 'btn-danger shadow' : 'btn-success' }} fw-bold">
+                                class="btn btn-sm {{ $is_overtime ? 'btn-danger shadow' : 'btn-success' }} fw-bold">
                                     <i class="fas fa-check-circle me-1"></i>Selesai & Bayar
                                 </a>
+
                                 <div class="btn-group w-100">
                                     <a href="{{ route('pesanan.create', $transaksi_spot->id) }}" 
-                                       class="btn btn-sm btn-primary">
+                                    class="btn btn-sm btn-primary">
                                         <i class="fas fa-plus me-1"></i>Pesan
                                     </a>
                                     <form method="POST" action="{{ route('transaksi.batal', $transaksi_spot->id) }}" class="d-inline">
@@ -148,7 +180,6 @@
                             </div>
                         </div>
                         @endif
-
                         {{-- Button Action untuk Spot Kosong --}}
                         @if($spot->status === 'tersedia')
                         <a href="{{ route('transaksi.create', $spot->id) }}" 
