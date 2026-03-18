@@ -85,15 +85,50 @@ Sistem ini dirancang untuk mendigitalisasi proses operasional harian secara teri
 
 ## Installation
 
+### Option A (Recommended): Docker + Laravel Sail
+
 ```bash
 git clone https://github.com/aam228/Sistem-pemancingan.git
 cd Sistem-pemancingan
 composer install
-npm install && npm run dev
+cp .env.example .env
+
+# set docker database credentials in .env
+# DB_CONNECTION=mysql
+# DB_HOST=mysql
+# DB_PORT=3306
+# DB_DATABASE=sistem_pemancingan
+# DB_USERNAME=sail
+# DB_PASSWORD=password
+
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate
+./vendor/bin/sail artisan storage:link
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run dev
+```
+
+Open:
+
+- App: http://localhost
+- phpMyAdmin: http://localhost:8080
+
+### Option B: Local PHP (without Docker)
+
+```bash
+git clone https://github.com/aam228/Sistem-pemancingan.git
+cd Sistem-pemancingan
+composer install
 cp .env.example .env
 php artisan key:generate
+
+# use your local MySQL credentials in .env
 php artisan migrate
 php artisan storage:link
+
+npm install
+npm run dev
 php artisan serve
 ```
 
