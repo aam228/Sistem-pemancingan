@@ -9,14 +9,6 @@
 
 @section('content')
 <div class="container-fluid">
-    {{-- Alerts --}}
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-        <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-alert="dismiss" aria-label="Close"></button>
-    </div>
-    @endif
-
     <div class="card bg-body border shadow-sm">
         <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
             <h5 class="mb-0 text-body fw-bold">Kelola Makanan & Minuman</h5>

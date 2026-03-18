@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Spot;
+use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SpotController extends Controller
 {
@@ -102,11 +104,18 @@ class SpotController extends Controller
             abort(403);
         }
 
-        $spot->update([
-            'status' => 'tersedia',
-        ]);
+        DB::transaction(function () use ($spot) {
+            Transaksi::where('user_id', Auth::id())
+                ->where('spot_id', $spot->id)
+                ->whereNull('jumlah_ikan_kecil')
+                ->delete();
 
-        return back()->with('success', 'Spot berhasil di-reset manual.');
+            $spot->update([
+                'status' => 'tersedia',
+            ]);
+        });
+
+        return back()->with('success', 'Spot berhasil di-reset manual. Transaksi berjalan dibersihkan.');
     }
 
     private function authorizeSpot(Spot $spot)

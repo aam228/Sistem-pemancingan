@@ -60,11 +60,11 @@ class SettingsController extends Controller
         $user->theme = $request->theme;
         $user->save();
 
-        if ($request->ajax()) {
+        if ($request->ajax() || $request->expectsJson()) {
             return response()->json(['success' => true, 'theme' => $user->theme]);
         }
 
-        return redirect()->back()->with('success', 'Tema berhasil disimpan!');
+        return redirect()->back();
     }
 
     public function updateProfileImage(Request $request)

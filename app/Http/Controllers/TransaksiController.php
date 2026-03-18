@@ -14,6 +14,23 @@ use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller
 {
+    private function mapSesiGabungan(string $sesiLama, string $sesiBaru): ?string
+    {
+        if ($sesiLama === $sesiBaru) {
+            return $sesiLama;
+        }
+
+        return match ([$sesiLama, $sesiBaru]) {
+            ['pagi', 'siang'],
+            ['pagi', 'sore'],
+            ['siang', 'pagi'],
+            ['sore', 'pagi'] => 'pagi_sore',
+            ['pagi_sore', 'malam'],
+            ['malam', 'pagi_sore'] => 'full',
+            default => null,
+        };
+    }
+
     private function getSesiConfig(string $tipe)
     {
         return [
@@ -160,18 +177,26 @@ class TransaksiController extends Controller
     public function tambahSesi(Request $request, $id)
     {
         $transaksi = Transaksi::with('spot')->findOrFail($id);
-        $sesiBaru = $request->input('sesi_baru'); 
+        $request->validate([
+            'sesi_baru' => ['required', 'in:pagi,siang,sore,malam'],
+        ]);
+
+        $sesiBaru = $request->input('sesi_baru');
 
         $kolomHarga = 'tarif_' . $sesiBaru;
         $hargaTambahan = $transaksi->spot->$kolomHarga ?? 0;
 
         $sesiLama = $transaksi->tipe_sesi;
-        
-        if (str_contains($sesiLama, $sesiBaru)) {
+
+        if ($sesiLama === $sesiBaru || $sesiLama === 'full') {
             return back()->with('error', "Sesi $sesiBaru sudah terdaftar di transaksi ini.");
         }
 
-        $tipeSesiUpdated = $sesiLama . ', ' . $sesiBaru;
+        $tipeSesiUpdated = $this->mapSesiGabungan($sesiLama, $sesiBaru);
+
+        if (!$tipeSesiUpdated) {
+            return back()->with('error', "Kombinasi sesi $sesiLama + $sesiBaru tidak didukung.");
+        }
 
         $transaksi->update([
             'tipe_sesi' => $tipeSesiUpdated,

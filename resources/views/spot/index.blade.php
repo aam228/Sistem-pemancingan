@@ -9,14 +9,6 @@
 
 @section('content')
 <div class="container-fluid">
-    {{-- Alerts --}}
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-        <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endif
-
     <div class="card bg-body border shadow-sm">
         <div class="card-header bg-transparent border-bottom py-3">
             <div class="d-flex justify-content-between align-items-center">
@@ -218,8 +210,8 @@
 
 @push('styles')
 <style>
-    .hover-card { transition: all 0.3s ease; }
-    .hover-card:hover { transform: translateY(-5px); border-color: var(--bs-primary) !important; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; }
+    .hover-card { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    .hover-card:hover { border-color: var(--bs-primary) !important; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; }
     .modal-content { border-radius: 0.75rem; border: none; }
     .format-rupiah { font-family: 'Courier New', Courier, monospace; font-weight: bold; }
 </style>
@@ -273,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
 @push('styles')
 <style>
     .hover-card { 
-        transition: all 0.2s ease-in-out;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
         position: relative;
         z-index: 1;
     }

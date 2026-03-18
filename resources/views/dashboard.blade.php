@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-<div class="container-fluid px-0">
+<div class="container-fluid">
     {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -89,7 +89,7 @@
                 @endphp
 
                 <div class="col">
-                    <div class="border rounded p-3 h-100 shadow-sm transition-card {{ $is_overtime ? 'bg-danger bg-opacity-10 border-danger' : 'bg-body' }}">
+                    <div class="border rounded p-3 h-100 shadow-sm transition-card spot-card {{ $transaksi_spot ? 'has-transaksi' : '' }} {{ $is_overtime ? 'bg-danger bg-opacity-10 border-danger' : 'bg-body' }}">
                         {{-- Header Card --}}
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h6 class="mb-0 text-body fw-bold">
@@ -97,7 +97,7 @@
                                 {{ $spot->nama_spot }}
                             </h6>
                             @if($is_overtime)
-                                <span class="badge bg-danger animate-pulse border border-danger">LEMBUR</span>
+                                <span class="badge bg-danger border border-danger">LEMBUR</span>
                             @elseif($spot->status === 'tersedia')
                                 <span class="badge bg-success-subtle text-success border border-success-subtle">Tersedia</span>
                             @elseif($spot->status === 'perawatan')
@@ -108,20 +108,25 @@
                         </div>
 
                         @if($transaksi_spot)
-                        <div class="border rounded p-3 mb-3 bg-body-tertiary shadow-sm">
+                        <div class="transaksi-compact btn btn-sm w-100 d-flex justify-content-between align-items-center border bg-body-tertiary text-start shadow-sm mb-0"
+                             role="button"
+                             aria-label="Detail transaksi aktif">
+                            <span class="fw-semibold text-body text-truncate me-2">{{ $transaksi_spot->nama_pelanggan }}</span>
+                            <span class="fw-bold {{ $is_overtime ? 'text-danger' : 'text-primary' }} countdown" data-seconds="{{ $sisa_detik }}">
+                                00:00:00
+                            </span>
+                        </div>
+
+                        <div class="transaksi-hover-panel border rounded p-3 bg-body shadow-lg">
                             <div class="mb-2">
                                 <small class="text-muted d-block small">Nama Pemancing</small>
                                 <p class="mb-0 fw-bold text-body">{{ $transaksi_spot->nama_pelanggan }}</p>
                             </div>
 
                             <div class="mb-3">
-                                <small class="text-muted d-block small">Mulai: {{ $transaksi_spot->waktu_mulai->format('H:i') }}</small>
-                                
-                                <div class="mt-2">
-                                    <small class="text-muted small">{{ $is_overtime ? 'Kelebihan waktu:' : 'Sisa waktu:' }}</small>
-                                    <div class="fw-bold {{ $is_overtime ? 'text-danger fs-5' : 'text-primary fs-5' }} countdown" data-seconds="{{ $sisa_detik }}">
-                                        00:00:00
-                                    </div>
+                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <small class="text-muted d-block small mb-0">Sesi: {{ strtoupper($transaksi_spot->tipe_sesi) }}</small>
+                                    <small class="text-muted d-block small mb-0">Mulai: {{ $transaksi_spot->waktu_mulai->format('H:i') }}</small>
                                 </div>
                             </div>
 
@@ -156,27 +161,35 @@
                                         </form>
                                     </ul>
                                 </div>
-                                
-                                {{-- Tombol Utama --}}
-                                <a href="{{ route('transaksi.selesai.form', $transaksi_spot->id) }}" 
+
+                                <a href="{{ route('transaksi.selesai.form', $transaksi_spot->id) }}"
                                 class="btn btn-sm {{ $is_overtime ? 'btn-danger shadow' : 'btn-success' }} fw-bold">
                                     <i class="fas fa-check-circle me-1"></i>Selesai & Bayar
                                 </a>
 
                                 <div class="btn-group w-100">
-                                    <a href="{{ route('pesanan.create', $transaksi_spot->id) }}" 
+                                    <a href="{{ route('pesanan.create', $transaksi_spot->id) }}"
                                     class="btn btn-sm btn-primary">
                                         <i class="fas fa-plus me-1"></i>Pesan
                                     </a>
                                     <form method="POST" action="{{ route('transaksi.batal', $transaksi_spot->id) }}" class="d-inline">
                                         @csrf
-                                        <button type="submit" 
+                                        <button type="submit"
                                                 class="btn btn-sm btn-outline-danger ms-1"
                                                 onclick="return confirm('Batalkan sesi ini?')">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
                                 </div>
+
+                                <form method="POST" action="{{ route('spot.reset', $spot->id) }}">
+                                    @csrf
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger w-100"
+                                            onclick="return confirm('Reset darurat akan menutup transaksi berjalan di spot ini. Lanjutkan?')">
+                                        <i class="fas fa-redo me-1"></i>Reset Darurat Spot
+                                    </button>
+                                </form>
                             </div>
                         </div>
                         @endif
@@ -256,17 +269,50 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 .transition-card {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: visible;
 }
-.transition-card:hover {
-    transform: translateY(-2px);
+.spot-card.has-transaksi {
+    z-index: 1;
 }
-.animate-pulse {
-    animation: pulse-red 2s infinite;
+.spot-card.has-transaksi:hover,
+.spot-card.has-transaksi:focus-within {
+    z-index: 30;
 }
-@keyframes pulse-red {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(0.95); }
-    100% { opacity: 1; transform: scale(1); }
+.transaksi-hover-panel {
+    position: absolute;
+    top: 68px;
+    left: 12px;
+    right: 12px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.transaksi-compact {
+    min-height: 38px;
+    cursor: default;
+}
+.spot-card.has-transaksi:hover .transaksi-hover-panel,
+.spot-card.has-transaksi:focus-within .transaksi-hover-panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+@media (max-width: 991.98px) {
+    .transition-card {
+        min-height: auto;
+    }
+    .transaksi-hover-panel {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: none;
+        margin-top: 0.75rem;
+    }
 }
 </style>
 @endpush
